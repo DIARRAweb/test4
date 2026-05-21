@@ -31,9 +31,9 @@ backdrop-filter: blur(10px);
 border: 1px solid rgba(255,255,255,0.2);
 color: white; padding: 12px; margin-top: 10px; border-radius: 14px; font-size: 14px; }
 button { width: 100%; padding: 12px; margin-top: 12px; border-radius: 14px; border: none; font-weight: bold; cursor: pointer; background: linear-gradient(45deg,#ff9a00,#ff6a00); color: white; }
-button:disabled { opacity: 0.5; }
 button:disabled {
   opacity: 0.5;
+  cursor: not-allowed;
 }
 
 input, textarea, select {
@@ -391,174 +391,6 @@ width:245px;
 }
 }
 
-.logo {
-font-size: 20px;
-font-weight: bold;
-}
-
-.header-right {
-display: flex;
-align-items: center;
-gap: 10px;
-margin-right: 30px;
-position: relative; /* 🔥 AJOUT ICI */
-}
-
-.profile-pic {
-width: 42px;
-height: 42px;
-border-radius: 50%;
-object-fit: cover;
-border: 2px solid white;
-cursor: pointer;
-}
-
-body {
-  margin: 0;
-  padding-top: 70px; /* 🔥 espace pour le header */
-}
-
-.profile-container {
-  position: relative;
-  width: 42px;
-  height: 42px;
-  cursor: pointer;
-}
-
-.profile-pic {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid white;
-}
-
-.status-dot {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 10px;
-  height: 10px;
-  background: #00ff88;
-  border-radius: 50%;
-  border: 2px solid white;
-}
-
-/* MENU */
-.user-menu {
-position: fixed;
-top: 75px;
-right: 20px;
-width: 240px;
-
-background: rgba(0,0,0,0.65);
-backdrop-filter: blur(15px);
-
-border-radius: 16px;
-box-shadow: 0 15px 40px rgba(0,0,0,0.4);
-
-padding: 15px;
-display: flex;
-flex-direction: column;
-gap: 10px;
-
-z-index: 2000;
-transition: 0.3s;
-}
-
-.user-menu.hidden {
-opacity: 0;
-transform: translateY(-10px);
-pointer-events: none;
-}
-
-.user-menu:not(.hidden) {
-opacity: 1;
-transform: translateY(0);
-}
-
-.user-menu button {
-background: rgba(255,255,255,0.08);
-color: white;
-border: none;
-padding: 10px;
-border-radius: 10px;
-cursor: pointer;
-text-align: left;
-transition: 0.2s;
-}
-
-.user-menu button:hover {
-background: rgba(255,255,255,0.2);
-}
-
-.hidden {
-  display: none;
-}
-
-.menu-profile {
-display: flex;
-flex-direction: column;
-align-items: center;
-margin-bottom: 10px;
-}
-
-.menu-profile img {
-width: 90px;
-height: 90px;
-border-radius: 50%;
-object-fit: cover;
-border: 3px solid #ff9a00;
-box-shadow: 0 0 15px rgba(255,154,0,0.5);
-margin-bottom: 5px;
-}
-
-.menu-profile p {
-color: white;
-font-weight: bold;
-font-size: 15px;
-margin-top: 5px;
-}
-
-.menu-profile img {
-transition: 0.3s;
-}
-
-.notif-badge {
-position: absolute;
-top: -6px;
-right: -6px;
-
-background: linear-gradient(45deg,#ff3d00,#ff0000);
-color: white;
-
-font-size: 10px;
-font-weight: bold;
-
-padding: 4px 7px;
-border-radius: 50%;
-
-box-shadow: 0 0 10px rgba(255,0,0,0.6);
-}
-
-.verified {
-position: absolute;
-bottom: -2px;
-left: -2px;
-background: #1da1f2;
-color: white;
-font-size: 10px;
-padding: 2px;
-border-radius: 50%;
-border: 2px solid white;
-}
-
-.menu-status {
-color: #00ff88;
-font-size: 12px;
-margin-top: 2px;
-opacity: 0.9;
-}
 
 /* ===== STYLE 3 ===== */
 
@@ -1086,6 +918,28 @@ opacity: 0.6;
 opacity: 1;
 transform: scale(1.1);
 }
+
+/* ✅ Correction visibilité champs mot de passe */
+#passwordBox .input-group label{
+  color: #333;
+  font-weight: 800;
+}
+
+#passwordBox input{
+  background: #ffffff !important;
+  color: #111 !important;
+  border: 2px solid #ff9a00 !important;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+}
+
+#passwordBox input::placeholder{
+  color: #777 !important;
+}
+
+#passwordBox .send-btn{
+  background: linear-gradient(45deg,#ff9a00,#ff3d00) !important;
+  color: white !important;
+}
 </style>
 </head>
 
@@ -1171,7 +1025,7 @@ transform: scale(1.1);
 
   <div class="action-box" onclick="openModal('transferBox')">
     💸
-    <span>Transfert instatané</span>
+    <span>Transfert instantané</span>
   </div>
 
   <div class="action-box" onclick="openModal('scheduledTransferBox')">
@@ -1292,12 +1146,12 @@ transform: scale(1.1);
 
 <div class="input-group">
 <label>Ancien mot de passe</label>
-<input id="oldPass" type="password">
+<input id="oldPass" type="password" placeholder="Entrez l'ancien mot de passe">
 </div>
 
 <div class="input-group">
 <label>Nouveau mot de passe</label>
-<input id="newPass" type="password">
+<input id="newPass" type="password" placeholder="Entrez le nouveau mot de passe">
 </div>
 
 <button onclick="changePassword()" class="send-btn">
@@ -2057,8 +1911,10 @@ const translations = {
     welcome:"👋 Bienvenue ",
     online:"● En ligne",
 
-    instantTransfer:"Transfert instatané",
+    send:"Envoyer",
+    instantTransfer:"Transfert instantané",
     scheduledTransferBtn:"Programmer un transfert",
+    scheduleButton:"Programmer le transfert",
     messageBox:"Boîte de message",
     myQr:"Mon QR",
     valid:"VALID",
@@ -2101,15 +1957,15 @@ const translations = {
     scheduleDateLabel:"Date programmée",
 
     recentActivities:"🕒 Activités récentes",
-    processing:"⏳Traitement...",
-    invalidData:"❌Données invalides",
-    accountNotFound:"❌Compte introuvable",
-    frozenAccount:"❌Compte gelé",
-    frozenReceiver:"❌Destinataire gelé",
-    rateError:"❌Impossible de récupérer le taux",
-    insufficientBalance:"❌Solde insuffisant (fonds bloqués)",
-    scheduledTransfer:"📅Transfert programmé",
-    transferSuccess:"✅Transfert réussi",
+    processing:"⏳ Traitement...",
+    invalidData:"❌ Données invalides",
+    accountNotFound:"❌ Compte introuvable",
+    frozenAccount:"❌ Compte gelé",
+    frozenReceiver:"❌ Destinataire gelé",
+    rateError:"❌ Impossible de récupérer le taux",
+    insufficientBalance:"❌ Solde insuffisant (fonds bloqués)",
+    scheduledTransfer:"📅 Transfert programmé",
+    transferSuccess:"✅ Transfert réussi",
 wrongPassword:"❌ Mot de passe incorrect",
 enterPassword:"Entrez votre mot de passe",
 
@@ -4496,18 +4352,34 @@ listenWithdrawRequests();
 listenNotifications();
 
 window.deleteNotif = async function(id){
-  await remove(ref(db,"notifications/" + currentUser.phone + "/" + id));
+  await remove(ref(db, "notifications/" + currentUser.phone + "/" + id));
   await loadNotifications();
 };
 
 function resetForm(){
-receiverInput.value="";
-amountInput.value="";
-document.getElementById("reason").value="";
+  receiverInput.value = "";
+  amountInput.value = "";
 
-if(conversionBox){
-conversionBox.style.display="none";
-}
+  const reasonInput = document.getElementById("reason");
+  if(reasonInput){
+    reasonInput.value = "";
+  }
+
+  const receiverName = document.getElementById("receiverName");
+  if(receiverName){
+    receiverName.innerText = "";
+  }
+
+  const selectedContact = document.getElementById("selectedContact");
+  if(selectedContact){
+    selectedContact.classList.add("hidden");
+    selectedContact.innerHTML = "";
+  }
+
+  if(conversionBox){
+    conversionBox.style.display = "none";
+    conversionBox.innerHTML = "";
+  }
 }
 
 function resetScheduledForm(){
@@ -4569,14 +4441,44 @@ scheduledSelectedContact.innerHTML="";
 
 
 function resetButton(){
-const t = translations[getUserLang()] || translations.fr;
-sendBtn.disabled=false;
-sendBtn.innerText=t.send;
+  const t = translations[getUserLang()] || translations.fr;
+
+  if(sendBtn){
+    sendBtn.disabled = false;
+    sendBtn.innerText = t.send || "Envoyer";
+  }
 }
 
-window.toggleNotifications=()=>notifBox.style.display=notifBox.style.display==="none"?"block":"none";
-window.togglePassword=()=>passwordBox.style.display=passwordBox.style.display==="none"?"block":"none";
-window.toggleTransfer=()=>transferBox.style.display=transferBox.style.display==="none"?"block":"none";
+function resetScheduledButton(){
+  const t = translations[getUserLang()] || translations.fr;
+  const scheduledBtn = document.getElementById("scheduledSendBtn");
+
+  if(scheduledBtn){
+    scheduledBtn.disabled = false;
+    scheduledBtn.innerText = t.scheduleButton || "Programmer le transfert";
+  }
+}
+
+window.toggleNotifications = () => {
+  const box = document.getElementById("notifBox");
+  if(box){
+    box.style.display = box.style.display === "none" ? "block" : "none";
+  }
+};
+
+window.togglePassword = () => {
+  const box = document.getElementById("passwordBox");
+  if(box){
+    box.style.display = box.style.display === "none" ? "block" : "none";
+  }
+};
+
+window.toggleTransfer = () => {
+  const box = document.getElementById("transferBox");
+  if(box){
+    box.style.display = box.style.display === "none" ? "block" : "none";
+  }
+};
 window.logout = async function(){
   localStorage.removeItem("loggedUser");
 
@@ -4649,9 +4551,11 @@ window.saveLanguage = async function(){
     localStorage.setItem("loggedUser", JSON.stringify(currentUser));
     localStorage.setItem("accountLanguage", lang);
 
-    applyLanguage();
+        if(typeof applyLanguage === "function"){
+      applyLanguage();
+    }
 
-    msg.innerText = t.languageSaved;
+      msg.innerText = t.languageSaved;
 
   }catch(e){
     msg.innerText = "❌ Erreur : " + e.message;
@@ -4661,14 +4565,20 @@ window.saveLanguage = async function(){
 const userMenu = document.getElementById("userMenu");
 
 window.toggleMenu = (e) => {
-e.stopPropagation();
+  if(e){
+    e.stopPropagation();
+  }
 
-const modal = document.getElementById("modal");
+  const modal = document.getElementById("modal");
 
-/* bloque si modal ouvert */
-if(!modal.classList.contains("hidden")) return;
+  /* bloque si modal ouvert */
+  if(modal && !modal.classList.contains("hidden")){
+    return;
+  }
 
-userMenu.classList.toggle("hidden");
+  if(userMenu){
+    userMenu.classList.toggle("hidden");
+  }
 };
 
 window.changePhoto = () => {
