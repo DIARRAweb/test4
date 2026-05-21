@@ -3356,8 +3356,62 @@ conversionBox.innerHTML=
 `💱 1 ${senderCur.symbol} = ${rate.toFixed(4)} ${receiverCur.symbol}<br>
 💰 Destinataire recevra : <strong>${formatMoney(converted)} ${receiverCur.symbol}</strong>`;
 }
+
+/* =========================
+   💱 CONVERSION LIVE - TRANSFERT PROGRAMMÉ
+========================= */
+async function updateScheduledConversion(){
+
+const receiverInput = document.getElementById("scheduledReceiver");
+const amountInput = document.getElementById("scheduledAmount");
+const box = document.getElementById("scheduledConversionBox");
+
+if(!receiverInput || !amountInput || !box) return;
+
+const receiverPhone = normalizePhone(receiverInput.value);
+const amount = Number(amountInput.value);
+
+if(!receiverPhone || !amount || amount <= 0){
+box.style.display = "none";
+box.innerHTML = "";
+return;
+}
+
+const senderCur = getCurrency(currentUser.phone);
+const receiverCur = getCurrency(receiverPhone);
+
+const rate = await getLiveRate(senderCur.code, receiverCur.code);
+
+if(!rate){
+box.style.display = "block";
+box.innerHTML = "❌ Impossible de récupérer le taux";
+return;
+}
+
+const convertedAmount = amount * rate;
+
+box.style.display = "block";
+box.innerHTML = `
+💱 ${formatMoney(amount, senderCur)}
+➡️
+<strong>${formatMoney(convertedAmount, receiverCur)}</strong><br>
+<small>1 ${senderCur.code} = ${rate} ${receiverCur.code}</small>
+`;
+}
+
 receiverInput.addEventListener("input",updateConversion);
 amountInput.addEventListener("input",updateConversion);
+
+const scheduledReceiverInput = document.getElementById("scheduledReceiver");
+const scheduledAmountInput = document.getElementById("scheduledAmount");
+
+if(scheduledReceiverInput){
+scheduledReceiverInput.addEventListener("input", updateScheduledConversion);
+}
+
+if(scheduledAmountInput){
+scheduledAmountInput.addEventListener("input", updateScheduledConversion);
+}
 
 /* ===== ENVOI ARGENT ===== */
 
@@ -4458,15 +4512,46 @@ conversionBox.style.display="none";
 
 function resetScheduledForm(){
 
-document.getElementById("scheduledReceiver").value="";
-document.getElementById("scheduledAmount").value="";
-document.getElementById("scheduledReason").value="";
-document.getElementById("scheduledDate").value="";
+const scheduledReceiver = document.getElementById("scheduledReceiver");
+const scheduledAmount = document.getElementById("scheduledAmount");
+const scheduledReason = document.getElementById("scheduledReason");
+const scheduledDate = document.getElementById("scheduledDate");
 
-const scheduledConversionBox=document.getElementById("scheduledConversionBox");
+if(scheduledReceiver) scheduledReceiver.value = "";
+if(scheduledAmount) scheduledAmount.value = "";
+if(scheduledReason) scheduledReason.value = "";
+if(scheduledDate) scheduledDate.value = "";
+
+const scheduledConversionBox = document.getElementById("scheduledConversionBox");
+const scheduledSelectedContact = document.getElementById("scheduledSelectedContact");
+const scheduledReceiverName = document.getElementById("scheduledReceiverName");
+const scheduledContactsList = document.getElementById("scheduledContactsList");
+const scheduledContactSearch = document.getElementById("scheduledContactSearch");
 
 if(scheduledConversionBox){
-scheduledConversionBox.style.display="none";
+scheduledConversionBox.style.display = "none";
+scheduledConversionBox.innerHTML = "";
+}
+
+if(scheduledSelectedContact){
+scheduledSelectedContact.classList.add("hidden");
+scheduledSelectedContact.innerHTML = "";
+}
+
+if(scheduledReceiverName){
+scheduledReceiverName.innerText = "";
+}
+
+if(scheduledContactsList){
+scheduledContactsList.classList.add("hidden");
+scheduledContactsList.innerHTML = "";
+}
+
+if(scheduledContactSearch){
+scheduledContactSearch.value = "";
+scheduledContactSearch.classList.add("hidden");
+}
+
 }
 
 const scheduledReceiverName=document.getElementById("scheduledReceiverName");
@@ -4481,7 +4566,7 @@ if(scheduledSelectedContact){
 scheduledSelectedContact.classList.add("hidden");
 scheduledSelectedContact.innerHTML="";
 }
-}
+
 
 function resetButton(){
 const t = translations[getUserLang()] || translations.fr;
@@ -4792,7 +4877,125 @@ contactsBox.classList.add("hidden");
 
 }
 
+/* =========================
+   📅 CONTACTS INTELLIGENTS - TRANSFERT PROGRAMMÉ
+========================= */
+if(contentId === "scheduledTransferBox"){
+
+const searchInput = content.querySelector("#scheduledContactSearch");
+const receiver = content.querySelector("#scheduledReceiver");
+const contactsBox = content.querySelector("#scheduledContactsList");
+const receiverName = content.querySelector("#scheduledReceiverName");
+const selectedBox = content.querySelector("#scheduledSelectedContact");
+
+/* 🔥 ouverture contacts */
+receiver.onfocus = ()=>{
+contactsBox.innerHTML = "";
+
+allUsers.forEach(user=>{
+if(user.phone === currentUser.phone) return;
+
+const country = getCountry(user.phone);
+const photo = user.photo ? user.photo : "";
+
+contactsBox.innerHTML += `
+<div class="contact-item" data-phone="${user.phone}" data-name="${user.name}">
+
+<div class="contact-avatar">
+${photo
+? `<img src="${photo}">`
+: user.name.charAt(0)}
+</div>
+
+<div class="contact-info">
+<div class="contact-name">${user.name} ${country.flag}</div>
+<div class="contact-phone">${user.phone}</div>
+</div>
+
+</div>
+`;
+});
+
+contactsBox.classList.remove("hidden");
+searchInput.classList.remove("hidden");
 };
+
+/* 🔍 recherche */
+searchInput.oninput = ()=>{
+const value = searchInput.value.toLowerCase();
+
+const items = contactsBox.querySelectorAll(".contact-item");
+
+items.forEach(item=>{
+const name = item.dataset.name.toLowerCase();
+const phone = item.dataset.phone;
+
+if(name.includes(value) || phone.includes(value)){
+item.style.display = "flex";
+}else{
+item.style.display = "none";
+}
+});
+};
+
+/* 🔥 clic contact */
+contactsBox.onclick = (e)=>{
+
+const item = e.target.closest(".contact-item");
+if(!item) return;
+
+const phone = item.dataset.phone;
+const name = item.dataset.name;
+
+selectedBox.innerHTML = `
+<div class="contact-avatar">${name.charAt(0)}</div>
+<div>
+<strong>${name}</strong><br>
+${phone}
+</div>
+`;
+
+selectedBox.classList.remove("hidden");
+
+receiver.value = phone;
+receiverName.innerText = "👤 " + name;
+
+/* cacher liste */
+contactsBox.classList.add("hidden");
+searchInput.classList.add("hidden");
+
+/* conversion programmée */
+updateScheduledConversion();
+};
+
+/* 🔥 auto-détection quand on écrit le numéro */
+receiver.addEventListener("input", ()=>{
+const phone = normalizePhone(receiver.value);
+
+const found = allUsers.find(u => u.phone === phone);
+
+if(found){
+receiverName.innerText = "👤 " + found.name;
+}else{
+receiverName.innerText = "❌ Utilisateur inconnu";
+}
+
+/* conversion live */
+updateScheduledConversion();
+});
+
+/* fermer liste si clic dehors */
+document.addEventListener("click", (e)=>{
+if(!contactsBox.contains(e.target) && e.target !== receiver){
+contactsBox.classList.add("hidden");
+}
+});
+
+}
+
+};
+
+
 
 function closeModal(){
 
