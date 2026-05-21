@@ -3567,7 +3567,7 @@ await update(ref(db,"users/"+receiverPhone),receiverData);
 await update(ref(db,"treasury"),treasury);
 
 const tx=await push(ref(db,"history/"+currentUser.phone),{
-customID: customID, // 🔥 AJOUT
+customID: customID,
 from:sender.phone,
 to:receiverPhone,
 amountOriginal:amount,
@@ -3577,7 +3577,8 @@ startupFee,
 totalFees,
 rateUsed:rate,
 reason,
-date:new Date().toLocaleString()
+date:new Date().toLocaleString(),
+createdAt: Date.now()
 });
 
 /* Notifications complètes avec réclamation */
@@ -3595,11 +3596,12 @@ seen:false
 });
 
 await push(ref(db,"history/"+receiverPhone),{
-customID: customID, // 🔥 MÊME ID
+customID: customID,
 from:sender.phone,
 to:receiverPhone,
 amountOriginal:convertedAmount,
 date:new Date().toLocaleString(),
+createdAt: Date.now(),
 type:"received"
 });
 
@@ -4921,10 +4923,56 @@ hiddenZone.appendChild(modalBody.firstChild);
 modal.classList.add("hidden");
 }
 
+/* =========================
+🧹 LIMITER HISTORIQUE À 10 ACTIVITÉS
+========================= */
+async function limitRecentHistory(userPhone){
+  const historyRef = ref(db, "history/" + userPhone);
+  const snap = await get(historyRef);
+
+  if(!snap.exists()) return;
+
+  const entries = Object.entries(snap.val());
+
+  /*
+    Si l'historique est inférieur ou égal à 10,
+    on ne supprime rien.
+  */
+  if(entries.length <= 10) return;
+
+  /*
+    On trie du plus récent au plus ancien.
+    Priorité :
+    1. createdAt si disponible
+    2. date si disponible
+    3. sinon 0
+  */
+  const sorted = entries.sort((a, b) => {
+    const dateA = Number(a[1].createdAt || new Date(a[1].date || 0).getTime() || 0);
+    const dateB = Number(b[1].createdAt || new Date(b[1].date || 0).getTime() || 0);
+
+    return dateB - dateA;
+  });
+
+  /*
+    On garde les 10 premiers,
+    puis on supprime automatiquement les autres.
+  */
+  const toDelete = sorted.slice(10);
+
+  const deletePromises = toDelete.map(([id]) => {
+    return remove(ref(db, "history/" + userPhone + "/" + id));
+  });
+
+  await Promise.all(deletePromises);
+}
+
 function listenHistory(){
   const historyRef = ref(db,"history/" + currentUser.phone);
 
-  onValue(historyRef,(snap)=>{
+  onValue(historyRef, async (snap)=>{
+
+    await limitRecentHistory(currentUser.phone);
 
     const historyList = document.getElementById("historyList");
     historyList.innerHTML = "";
@@ -4941,7 +4989,11 @@ function listenHistory(){
     const cur = getCurrency(currentUser.phone);
 
     Object.entries(snap.val())
-      .reverse()
+      .sort((a,b)=>{
+        const dateA = Number(a[1].createdAt || new Date(a[1].date || 0).getTime() || 0);
+        const dateB = Number(b[1].createdAt || new Date(b[1].date || 0).getTime() || 0);
+        return dateB - dateA;
+      })
       .slice(0,10)
       .forEach(([id,tx])=>{
 
